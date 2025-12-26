@@ -14,6 +14,11 @@ body {
     background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
     font-family: 'Nunito', sans-serif;
     touch-action: none;
+    -webkit-user-select: none; /* Anti-sélection/zoom iOS */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    height: 100vh; /* Force pleine hauteur */
+    position: fixed; /* Empêche scroll/resize inattendu */
 }
 
 #game-container {
@@ -21,6 +26,7 @@ body {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    padding-bottom: env(safe-area-inset-bottom); /* Gère barre iOS en bas */
 }
 
 canvas {
@@ -162,15 +168,14 @@ button {
 
 /* Contrôles mobiles (ajoutés ici pour cohérence) */
 #mobile-controls {
-    display: none; /* Toujours caché par défaut, affiché via JS */
-    /* Retrait de position: absolute; bottom: 0; */
+    display: none;
     width: 100%;
     padding: 10px 20px;
     box-sizing: border-box;
     justify-content: space-between;
     z-index: 50;
     pointer-events: none;
-    background: rgba(124, 179, 66, 0.3); /* Fond vert semi-transparent (optionnel) */
+    background: transparent; /* Retirer fond pour mieux intégrer */
 }
 
 .touch-btn {
@@ -468,11 +473,28 @@ button {
 
     // Déplacement ici : définition de resize, listener et appel initial
     function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        // On place le sol un peu plus haut pour que Olivia ne soit pas cachée par les boutons
-        GAME.groundY = canvas.height - 150; 
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    GAME.groundY = canvas.height - 80;  // Réduit à 80px pour aligner sol au bas (boutons chevauchent)
+    
+    // Positionner contrôles mobiles
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        const controls = document.getElementById('mobile-controls');
+        if (controls) {
+            controls.style.position = 'absolute';
+            controls.style.top = `${GAME.groundY - 70}px`;  // Chevauche le bas du sol (70px = hauteur boutons)
+            controls.style.left = '0';
+            controls.style.width = '100%';
+            controls.style.display = 'flex';
+            controls.style.pointerEvents = 'auto';
+        }
     }
+    
+    // Rafraîchir level si jeu en cours
+    if (GAME.state === 'PLAYING') {
+        generateLevel();
+    }
+}
     window.addEventListener('resize', resize);
     resize();  // Appel initial maintenant que GAME existe
 
@@ -553,16 +575,12 @@ button {
     }
 
     function generateLevel() {
-        entities = [];
-        GAME.groundY = canvas.height - 150;  // Standardisé à -150 pour matcher resize()
-        PLAYER.x = 100; PLAYER.y = GAME.groundY - PLAYER.height - 40;  // Ajusté pour mieux positionner
-        PLAYER.vx = 0; PLAYER.vy = 0; PLAYER.climbing = false;
-        
-        GAME.mistakes = 0;
+    entities = [];
+    GAME.groundY = canvas.height - 80;  // Aligné au bas
+    PLAYER.x = 100; PLAYER.y = GAME.groundY - PLAYER.height - 40;
+    GAME.mistakes = 0;
 
-        // Extension visuelle du sol jusqu'au bas de l'écran
-const groundHeight = canvas.height - GAME.groundY;  // Calcule ~150px ou la valeur actuelle
-entities.push(new Platform(0, GAME.groundY, 20000, groundHeight, true));;
+    entities.push(new Platform(0, GAME.groundY, 20000, 40, true));  // Sol fin de 40px au bas
 
         let currentX = 400;
         let currentY = GAME.groundY - 120; 
@@ -960,6 +978,9 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
 
 function loop() { update(); draw(); requestAnimationFrame(loop); }
 loop();
+// Gérer resize sur clavier (focus/blur inputs)
+window.addEventListener('focus', resize);
+window.addEventListener('blur', resize);
 
     
 </script>
