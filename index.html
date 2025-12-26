@@ -162,17 +162,15 @@ button {
 
 /* Contrôles mobiles (ajoutés ici pour cohérence) */
 #mobile-controls {
-    display: none; /* Caché par défaut */
-    position: absolute;
-    bottom: 0px;
-    left: 0;
+    display: none; /* Toujours caché par défaut, affiché via JS */
+    /* Retrait de position: absolute; bottom: 0; */
     width: 100%;
-    padding: 15px 20px;
+    padding: 10px 20px;
     box-sizing: border-box;
     justify-content: space-between;
     z-index: 50;
     pointer-events: none;
-    background: rgba(124, 179, 66, 0.3);
+    background: rgba(124, 179, 66, 0.3); /* Fond vert semi-transparent (optionnel) */
 }
 
 .touch-btn {
@@ -721,6 +719,20 @@ entities.push(new Platform(0, GAME.groundY, 20000, groundHeight, true));;
     
     entities.forEach(e => e.draw());
     drawPrincess(PLAYER.x - GAME.cameraX, PLAYER.y, PLAYER.width, PLAYER.height, PLAYER.facingRight);
+
+    // Positionner les contrôles mobiles sous le joueur/sol
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        const controls = document.getElementById('mobile-controls');
+        if (controls) {
+            // Placer les boutons juste sous le sol (ex: 20px en dessous de groundY)
+            controls.style.position = 'absolute';
+            controls.style.top = `${GAME.groundY + 20}px`; // 20px sous le sol
+            controls.style.left = '0';
+            controls.style.width = '100%';
+            controls.style.display = 'flex'; // Afficher seulement si tactile
+            controls.style.pointerEvents = 'auto'; // Activer les clics
+        }
+    }
 }
 
     function drawPrincess(x, y, w, h, facingRight) {
