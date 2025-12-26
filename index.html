@@ -164,10 +164,10 @@ button {
 #mobile-controls {
     display: none; /* Caché par défaut */
     position: absolute;
-    bottom: 20px;
+    bottom: 0px;
     left: 0;
     width: 100%;
-    padding: 0 20px;
+    padding: 10px 20px;
     box-sizing: border-box;
     justify-content: space-between;
     z-index: 50;
@@ -709,10 +709,16 @@ button {
     }
 
     function draw() {
-        ctx.fillStyle = '#87CEEB'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        entities.forEach(e => e.draw());
-        drawPrincess(PLAYER.x - GAME.cameraX, PLAYER.y, PLAYER.width, PLAYER.height, PLAYER.facingRight);
-    }
+    ctx.fillStyle = '#87CEEB'; // Fond ciel bleu
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Ajout : Remplir l'espace en dessous du sol avec du vert (herbe) pour cacher le bleu
+    ctx.fillStyle = '#7CB342'; // Couleur du sol ground
+    ctx.fillRect(0, GAME.groundY, canvas.width, canvas.height - GAME.groundY);
+    
+    entities.forEach(e => e.draw());
+    drawPrincess(PLAYER.x - GAME.cameraX, PLAYER.y, PLAYER.width, PLAYER.height, PLAYER.facingRight);
+}
 
     function drawPrincess(x, y, w, h, facingRight) {
         ctx.save();
