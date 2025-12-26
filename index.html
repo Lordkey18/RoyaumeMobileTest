@@ -281,6 +281,8 @@
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+		// On place le sol un peu plus haut pour que Olivia ne soit pas cachée par les boutons
+        GAME.groundY = canvas.height - 150; 
     }
     window.addEventListener('resize', resize);
     resize();
@@ -942,4 +944,5 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
 </script>
 </body>
 </html>
+
 
