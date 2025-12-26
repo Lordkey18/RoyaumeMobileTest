@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Le Royaume Magique d'Olivia - V5.3</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+            font-family: 'Nunito', sans-serif;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+	body {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+        /* Accueil / Menu Principal */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FF69B4 0%, #9370DB 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            color: white;
+            text-align: center;
+        }
+
+        .game-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(40px, 8vw, 80px);
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .btn-main {
+            background: #FFD700;
+            color: #C71585;
+            padding: 20px 60px;
+            font-size: 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 8px 0 #B8860B;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .btn-main:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #B8860B;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* HUD & UI */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 24px;
+            color: #FF69B4;
+            text-shadow: 2px 2px 0px #fff;
+            pointer-events: none;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        #question-box {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            border: 5px solid #FF69B4;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 90%;
+            width: 500px;
+        }
+
+        .question-text { font-size: 28px; font-weight: bold; margin: 10px 0; }
+        .clue-text { font-size: 18px; color: #666; font-style: italic; margin-bottom: 20px; }
+
+        input[type="text"] {
+            font-size: 24px; padding: 10px; border-radius: 10px; border: 2px solid #ddd;
+            width: 200px; text-align: center; outline: none; font-family: 'Fredoka One', cursive;
+            text-transform: uppercase;
+        }
+
+        button {
+            background: linear-gradient(to bottom, #FF69B4, #C71585);
+            border: none; padding: 12px 24px; color: white; font-family: 'Fredoka One', cursive;
+            font-size: 20px; border-radius: 50px; cursor: pointer; margin-top: 15px;
+        }
+
+        #feedback-msg {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-family: 'Fredoka One', cursive; font-size: 60px; color: #FFD700;
+            text-shadow: 3px 3px 0 #FF69B4; pointer-events: none; opacity: 0; z-index: 90;
+        }
+
+        #mobile-controls {
+            display: none; position: absolute; bottom: 20px; width: 100%; padding: 0 20px;
+            box-sizing: border-box; justify-content: space-between; z-index: 50; pointer-events: none;
+        }
+
+        .touch-btn {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.3); /* Blanc transparent */
+    border: 3px solid white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    pointer-events: auto; /* Permet de cliquer sur le bouton */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    user-select: none;    /* Évite de sélectionner le texte en jouant */
+}
+.touch-btn:active {
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0.9); /* Effet d'enfoncement */
+}
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <h1 class="game-title">Le Royaume Magique<br>d'Olivia</h1>
+        <div class="menu-buttons">
+            <button id="start-button" class="btn-main">JOUER !</button>
+            <div class="toggle-container">
+                <label for="music-toggle">Musique 🎵</label>
+                <input type="checkbox" id="music-toggle" checked style="width: 25px; height: 25px; cursor: pointer;">
+            </div>
+        </div>
+        <p style="margin-top: 30px; font-weight: bold; font-size: 1.2rem;">👑 Apprends en t'amusant !</p>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="hud">
+        <div style="display:flex; gap: 20px;">
+            <span style="color: #9370DB;">👑 Niveau: <span id="level">1</span>/15</span>
+            <span>⭐ Étoiles: <span id="score">0</span></span>
+        </div>
+        <div>
+            <span style="color: #FF0000;">❤️ Vies: <span id="lives">3</span>/3</span>
+        </div>
+    </div>
+
+    <div id="feedback-msg">BRAVO !</div>
+
+    <div id="mobile-controls" style="display: none; position: absolute; bottom: 20px; width: 100%; padding: 0 20px; box-sizing: border-box; justify-content: space-between; z-index: 100; pointer-events: none;">
+    <div style="display: flex; gap: 20px; pointer-events: auto;">
+        <div id="btn-left" style="width: 70px; height: 70px; background: rgba(255,255,255,0.3); border: 3px solid #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px;">⬅️</div>
+        <div id="btn-right" style="width: 70px; height: 70px; background: rgba(255,255,255,0.3); border: 3px solid #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px;">➡️</div>
+    </div>
+    <div id="btn-jump" style="width: 70px; height: 70px; background: rgba(255,255,255,0.3); border: 3px solid #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; pointer-events: auto;">⬆️</div>
+</div>
+
+    <div id="mobile-controls">
+        <div style="display: flex; gap: 15px;">
+            <div class="touch-btn" id="btn-left">⬅️</div>
+            <div class="touch-btn" id="btn-right">➡️</div>
+        </div>
+        <div class="touch-btn" id="btn-jump">⬆️</div>
+    </div>
+</div>
+
+<div id="modal-overlay">
+    <div id="question-box">
+        <h2 id="q-title" style="color: #9370DB; font-family: 'Fredoka One';">Défi Magique !</h2>
+        <div id="q-content" class="question-text"></div>
+        <div id="q-clue" class="clue-text"></div>
+        <div id="q-input-area"></div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let audioCtx = null;
+    let isMusicEnabled = true;
+    let musicTimer = null;
+
+    function initAudio() {
+        if (audioCtx || !isMusicEnabled) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        playFairyMusic();
+    }
+
+    function playFairyMusic() {
+        if (!isMusicEnabled) return;
+        const notes = [523.25, 659.25, 783.99, 987.77, 1046.50]; 
+        let noteIdx = 0;
+
+        function nextNote() {
+            if (!audioCtx || !isMusicEnabled) return;
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(notes[noteIdx], audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 2);
+            noteIdx = (noteIdx + 1) % notes.length;
+            musicTimer = setTimeout(nextNote, 800);
+        }
+        nextNote();
+    }
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const wordsData = [
+        { word: "LAPIN", clue: "Un animal avec de grandes oreilles." },
+        { word: "ROBE", clue: "Un vêtement pour princesse." },
+        { word: "CHAT", clue: "Un animal qui fait miaou." },
+        { word: "ECOLE", clue: "Là où on va pour apprendre." },
+        { word: "LUNE", clue: "Elle brille dans le ciel la nuit." },
+        { word: "POMME", clue: "Un fruit rond, rouge ou vert." },
+        { word: "FLEUR", clue: "Ça sent bon et c'est coloré." },
+        { word: "CHIEN", clue: "Un animal qui fait wouf wouf." },
+        { word: "SOLEIL", clue: "Il nous chauffe et brille le jour." },
+        { word: "BATEAU", clue: "Il flotte sur l'eau." },
+        { word: "GATEAU", clue: "C'est bon pour le goûter." },
+	{ word: "AIGLE", clue: "Un grand oiseau qui voit très loin." },
+{ word: "ANCRE", clue: "On la jette pour arrêter le bateau." },
+{ word: "BARBE", clue: "Les poils sur le menton de papa." },
+{ word: "BIFTECK", clue: "De la viande que l'on mange." },
+{ word: "BOCAL", clue: "Un pot en verre pour les poissons." },
+{ word: "BOTTE", clue: "Chaussure pour marcher dans la boue." },
+{ word: "BOULE", clue: "Elle est ronde comme un ballon." },
+{ word: "BROSSE", clue: "On l'utilise pour avoir les cheveux lisse." },
+{ word: "CABANE", clue: "Une petite maison dans les bois." },
+{ word: "CACTUS", clue: "Une plante verte qui pique." },
+{ word: "CACHÉ", clue: "Quand on ne nous voit plus." },
+{ word: "CAMP", clue: "Où l'on dort sous une tente." },
+{ word: "CANNE", clue: "Pour aider les papis à marcher." },
+{ word: "CARPE", clue: "Un gros poisson de rivière." },
+{ word: "CARTE", clue: "Pour trouver le trésor." },
+{ word: "CASQUE", clue: "Pour protéger la tête à vélo." },
+{ word: "CERISE", clue: "Un petit fruit rouge avec un noyau." },
+{ word: "CHAMP", clue: "Où le paysan fait pousser le blé." },
+{ word: "CHANT", clue: "De la musique avec la voix." },
+{ word: "CRABE", clue: "Il marche de côté sur le sable." },
+{ word: "CRAIE", clue: "Pour écrire sur le tableau noir." },
+{ word: "CUIR", clue: "La peau des chaussures." },
+{ word: "DESERT", clue: "Beaucoup de sable et très chaud." },
+{ word: "DINDE", clue: "Un gros oiseau de la ferme." },
+{ word: "DOUR", clue: "Le contraire de piquant ou dur." },
+{ word: "DRAGON", clue: "Un monstre qui crache du feu." },
+{ word: "DROIT", clue: "Le contraire de tordu ou gauche." },
+{ word: "ECLAIR", clue: "Une lumière dans le ciel d'orage." },
+{ word: "EPONGE", clue: "Pour nettoyer la table avec de l'eau." },
+{ word: "FORET", clue: "Un endroit avec beaucoup d'arbres." },
+{ word: "FRAISE", clue: "Un fruit rouge très sucré." },
+{ word: "FRIGO", clue: "Pour garder les aliments au froid." },
+{ word: "GENOU", clue: "La bosse au milieu de la jambe." },
+{ word: "GIRAFE", clue: "Elle a un cou très, très long." },
+{ word: "HARPE", clue: "Un grand instrument à cordes." },
+{ word: "HERBE", clue: "Elle est verte dans le jardin." },
+{ word: "HÔTEL", clue: "Une grande maison pour les voyageurs." },
+{ word: "JAMBE", clue: "Elle sert à courir et sauter." },
+{ word: "LAPIN", clue: "Il a de grandes oreilles." },
+{ word: "LEZARD", clue: "Un petit reptile qui aime le soleil." },
+{ word: "LOUPE", clue: "Pour voir les choses en très grand." },
+{ word: "LUCIOLE", clue: "Un insecte qui brille la nuit." },
+{ word: "MARCHE", clue: "On la monte pour aller à l'étage." },
+{ word: "METRO", clue: "Un train qui roule sous la ville." },
+{ word: "MOULE", clue: "Pour donner une forme au gâteau." },
+{ word: "NAVET", clue: "Un légume tout blanc et rond." },
+{ word: "ONGLE", clue: "On le coupe au bout du doigt." },
+{ word: "ORAGE", clue: "Quand il y a du tonnerre et des éclairs." },
+{ word: "PHARE", clue: "Une tour qui guide les bateaux." },
+        { word: "OISEAU", clue: "Il a des ailes pour voler." },
+        { word: "LIVRE", clue: "On peut y lire des histoires." },
+        { word: "SOURIS", clue: "Elle adore manger du fromage." },
+        { word: "TABLE", clue: "On s'assoit autour pour manger." },
+        { word: "MAISON", clue: "L'endroit où on habite." },
+	{ word: "ARBRE", clue: "Il a un tronc et des feuilles." },
+{ word: "AVION", clue: "Il vole dans le ciel." },
+{ word: "BALLE", clue: "Un objet rond pour jouer." },
+{ word: "BOUCHE", clue: "Pour manger et parler." },
+{ word: "BOUGIE", clue: "Sur le gâteau d'anniversaire." },
+{ word: "CADEAU", clue: "Pour faire plaisir." },
+{ word: "CANARD", clue: "Il fait coin-coin." },
+{ word: "CHAISE", clue: "Pour s'asseoir." },
+{ word: "CHAPEAU", clue: "On le met sur la tête." },
+{ word: "CITRON", clue: "Jaune et très acide." },
+{ word: "CLEF", clue: "Pour ouvrir la porte." },
+{ word: "COCHON", clue: "Rose et aime la boue." },
+{ word: "CRAYON", clue: "Pour dessiner." },
+{ word: "DENTS", clue: "Pour croquer la pomme." },
+{ word: "DOIGT", clue: "Il y en a cinq sur la main." },
+{ word: "DOUCHE", clue: "Pour se lave." },
+{ word: "EPEE", clue: "L'arme du chevalier." },
+{ word: "FARINE", clue: "Pour faire du pain." },
+{ word: "FILLE", clue: "Une enfant." },
+{ word: "FOUR", clue: "Pour cuire les tartes." },
+{ word: "GLACE", clue: "Froid et sucré en été." },
+{ word: "GOMME", clue: "Pour effacer." },
+{ word: "HIBOU", clue: "Oiseau de la nuit." },
+{ word: "HIVER", clue: "Quand il neige." },
+{ word: "ILE", clue: "Terre entourée d'eau." },
+{ word: "JAUNE", clue: "La couleur du soleil." },
+{ word: "JOIE", clue: "Quand on est heureux." },
+{ word: "JUS", clue: "Boisson aux fruits." },
+{ word: "LAIT", clue: "Une boisson blanche." },
+{ word: "LAMPE", clue: "Elle éclaire la chambre." },
+{ word: "LION", clue: "Le roi de la savane." },
+{ word: "MAIN", clue: "Pour toucher et attraper." },
+{ word: "MAMAN", clue: "Elle t'aime fort." },
+{ word: "MER", clue: "Eau bleue et salée." },
+{ word: "MIEL", clue: "Fait par les abeilles." },
+{ word: "MONDE", clue: "La planète Terre." },
+{ word: "NID", clue: "Maison des oiseaux." },
+{ word: "NOËL", clue: "Sapin et cadeaux." },
+{ word: "NOIR", clue: "Couleur de la nuit." },
+{ word: "NUAGE", clue: "Flotte dans le ciel." },
+{ word: "OEUF", clue: "La poule le pond." },
+{ word: "PAIN", clue: "De la boulangerie." },
+{ word: "PAPA", clue: "Ton parent." },
+{ word: "PIED", clue: "Pour marcher." },
+{ word: "PLUIE", clue: "L'eau du ciel." },
+{ word: "PORTE", clue: "Pour entrer dans la pièce." },
+{ word: "PULL", clue: "Quand on a froid." },
+{ word: "RIRE", clue: "Quand c'est drôle." },
+{ word: "ROI", clue: "Le mari de la reine." },
+        { word: "JARDIN", clue: "De l'herbe et des fleurs dehors." },
+        { word: "BALLON", clue: "On joue avec dans la cour." },
+        { word: "COEUR", clue: "C'est le symbole de l'amour." },
+        { word: "ETOILE", clue: "Un point brillant dans la nuit." },
+        { word: "BANANE", clue: "Un fruit jaune tout en longueur." },
+        { word: "ZEBRE", clue: "Un cheval avec des rayures." },
+        { word: "POISSON", clue: "Il nage dans l'océan." },
+        { word: "FORET", clue: "Plein d'arbres ensemble." },
+        { word: "AMI", clue: "Quelqu'un avec qui on joue." }
+	
+    ];
+
+    const numbersData = [
+        { digit: "1", word: "UN", clue: "Le premier nombre." },
+        { digit: "2", word: "DEUX", clue: "Un plus un." },
+        { digit: "3", word: "TROIS", clue: "Deux plus un." },
+        { digit: "4", word: "QUATRE", clue: "Le nombre de roues d'une voiture." },
+        { digit: "5", word: "CINQ", clue: "Les doigts d'une main." },
+        { digit: "6", word: "SIX", clue: "La moitié de douze." },
+        { digit: "7", word: "SEPT", clue: "Les jours d'une semaine." },
+        { digit: "8", word: "HUIT", clue: "Les pattes d'une araignée." },
+        { digit: "9", word: "NEUF", clue: "Trois fois trois." },
+        { digit: "10", word: "DIX", clue: "Les doigts des deux mains." },
+        { digit: "11", word: "ONZE", clue: "Dix plus un." },
+        { digit: "12", word: "DOUZE", clue: "Les mois de l'année." },
+        { digit: "13", word: "TREIZE", clue: "Un nombre porte-malheur pour certains." },
+        { digit: "14", word: "QUATORZE", clue: "Deux fois sept." },
+        { digit: "15", word: "QUINZE", clue: "Trois fois cinq." },
+        { digit: "16", word: "SEIZE", clue: "Quatre fois quatre." },
+        { digit: "17", word: "DIX-SEPT", clue: "Dix plus sept." },
+        { digit: "18", word: "DIX-HUIT", clue: "Deux fois neuf." },
+        { digit: "19", word: "DIX-NEUF", clue: "Dix plus neuf." },
+        { digit: "20", word: "VINGT", clue: "Deux fois dix." }
+    ];
+
+    const sentencesData = [
+        "Le chat miaule.",
+        "La pomme est rouge.",
+        "Le chien court vite.",
+        "La fleur est belle.",
+        "Le soleil brille.",
+        "Le bateau flotte.",
+        "Le gâteau est bon.",
+        "L'oiseau vole haut.",
+        "Le livre est ouvert.",
+        "La souris mange du fromage.",
+        "La table est ronde.",
+        "La maison est grande.",
+        "Le jardin a des fleurs.",
+        "Le ballon rebondit.",
+        "Le cœur bat fort.",
+        "L'étoile scintille.",
+        "La banane est jaune.",
+        "Le zèbre a des rayures.",
+        "Le poisson nage.",
+        "La forêt est verte.",
+        "Mon ami joue avec moi.",
+        "Olivia aime lire.",
+        "Le lapin saute.",
+        "La robe est rose.",
+        "L'école est amusante."
+    ];
+
+    const GAME = {
+        state: 'START_MENU',
+        gravity: 0.6,
+        friction: 0.8,
+        cameraX: 0,
+        score: 0,
+        level: 1,
+        mistakes: 0,
+        maxMistakes: 3,
+        groundY: 0
+    };
+
+    const PLAYER = {
+        x: 100, y: 0, width: 40, height: 60, vx: 0, vy: 0,
+        speed: 6, jumpPower: -14, grounded: false, facingRight: true,
+        climbing: false
+    };
+
+    const INPUT = { left: false, right: false, up: false };
+    let entities = [];
+
+    // --- Entités du Jeu ---
+    class Platform {
+        constructor(x, y, w, h, isGround = false) { this.x = x; this.y = y; this.w = w; this.h = h; this.type = 'platform'; this.isGround = isGround; }
+        draw() {
+            ctx.fillStyle = this.isGround ? '#7CB342' : '#8BC34A';
+            ctx.fillRect(this.x - GAME.cameraX, this.y, this.w, this.h);
+            ctx.fillStyle = this.isGround ? '#558B2F' : '#689F38';
+            ctx.fillRect(this.x - GAME.cameraX, this.y, this.w, 10);
+        }
+    }
+
+    class Ladder {
+        constructor(x, y, h) {
+            this.x = x; this.y = y; this.w = 40; this.h = h; this.type = 'ladder';
+        }
+        draw() {
+            const drawX = this.x - GAME.cameraX;
+            ctx.strokeStyle = '#8D6E63';
+            ctx.lineWidth = 6;
+            // Montants
+            ctx.beginPath();
+            ctx.moveTo(drawX + 5, this.y); ctx.lineTo(drawX + 5, this.y + this.h);
+            ctx.moveTo(drawX + 35, this.y); ctx.lineTo(drawX + 35, this.y + this.h);
+            ctx.stroke();
+            // Barreaux
+            for(let step = 10; step < this.h; step += 20) {
+                ctx.beginPath();
+                ctx.moveTo(drawX + 5, this.y + step); ctx.lineTo(drawX + 35, this.y + step);
+                ctx.stroke();
+            }
+        }
+    }
+
+    class Coin {
+        constructor(x, y) { this.x = x; this.y = y; this.w = 40; this.h = 40; this.type = 'coin'; this.collected = false; }
+        draw() {
+            if (this.collected) return;
+            const bobY = Math.sin(Date.now() / 200) * 5;
+            ctx.font = "35px Arial"; ctx.textAlign = "center";
+            ctx.fillText("⭐", this.x - GAME.cameraX + 20, this.y + 35 + bobY);
+        }
+    }
+
+    class NPC {
+        constructor(x, y, skin, isBoss = false) {
+            this.x = x; this.y = y; this.w = 60; this.h = 60; this.type = 'npc';
+            this.skin = skin; this.talked = false; this.isBoss = isBoss;
+        }
+        draw() {
+            if (this.talked) ctx.globalAlpha = 0.3;
+            ctx.font = this.isBoss ? "70px Arial" : "50px Arial"; ctx.textAlign = "center";
+            const floatY = this.isBoss ? Math.sin(Date.now() / 300) * 10 : 0;
+            ctx.fillText(this.skin, this.x - GAME.cameraX + 30, this.y + 50 + floatY);
+            ctx.globalAlpha = 1.0;
+        }
+    }
+
+    class Castle {
+        constructor(x, y) { this.x = x; this.y = y; this.w = 150; this.h = 200; this.type = 'castle'; }
+        draw() {
+            const drawX = this.x - GAME.cameraX;
+            ctx.fillStyle = "#A9A9A9"; ctx.fillRect(drawX + 30, this.y - 120, 90, 120);
+            ctx.fillStyle = "#FF69B4"; ctx.fillRect(drawX + 10, this.y - 150, 30, 150); ctx.fillRect(drawX + 110, this.y - 150, 30, 150);
+            ctx.fillStyle = "gold"; ctx.font = "40px Arial"; ctx.fillText("🏰", drawX + 75, this.y - 50);
+        }
+    }
+
+    function generateLevel() {
+        entities = [];
+        GAME.groundY = canvas.height - 80;
+        PLAYER.x = 100; PLAYER.y = GAME.groundY - 100;
+        PLAYER.vx = 0; PLAYER.vy = 0; PLAYER.climbing = false;
+        
+        GAME.mistakes = 0;
+
+        entities.push(new Platform(0, GAME.groundY, 20000, 100, true));
+
+        let currentX = 400;
+        let currentY = GAME.groundY - 120; 
+        const numPlatforms = 10 + GAME.level;
+
+        for(let i=0; i < numPlatforms; i++) {
+            let gap = 160 + Math.random() * 100; currentX += gap;
+            let deltaY = (Math.random() * 180) - 90; let newY = currentY + deltaY;
+            if (newY > GAME.groundY - 100) newY = GAME.groundY - 100;
+            if (newY < 250) newY = 250;
+            let width = 200 + Math.random() * 100;
+            
+            const plat = new Platform(currentX, newY, width, 40);
+            entities.push(plat);
+            
+            // Ajouter une échelle si la plateforme est assez haute par rapport au sol
+            if (i % 4 === 0 && newY < GAME.groundY - 150) {
+                entities.push(new Ladder(currentX + 20, newY, GAME.groundY - newY));
+            }
+
+            if (Math.random() < 0.5) entities.push(new Coin(currentX + width/2 - 20, newY - 80));
+            else if (Math.random() < 0.3) {
+                const skins = ["🦄", "🧚", "🦉", "🐰", "🍄"];
+                entities.push(new NPC(currentX + width/2 - 30, newY - 60, skins[Math.floor(Math.random()*skins.length)]));
+            }
+
+            currentY = newY; currentX += width;
+        }
+
+        entities.push(new NPC(currentX + 150, GAME.groundY - 100, "👻", true));
+        entities.push(new Castle(currentX + 350, GAME.groundY));
+        updateHUD();
+    }
+
+    function update() {
+    if (GAME.state !== 'PLAYING') return;
+
+    // -------------------------
+    // MOUVEMENT HORIZONTAL
+    // -------------------------
+    if (INPUT.left)  { PLAYER.vx--; PLAYER.facingRight = false; }
+    if (INPUT.right) { PLAYER.vx++; PLAYER.facingRight = true; }
+    if (!INPUT.left && !INPUT.right) PLAYER.vx *= GAME.friction;
+
+    PLAYER.vx = Math.max(-PLAYER.speed, Math.min(PLAYER.speed, PLAYER.vx));
+
+    // -------------------------
+    // DÉTECTION ÉCHELLE
+    // -------------------------
+    let onLadder = false;
+    entities.forEach(e => {
+        if (e.type === 'ladder' && checkCollision(PLAYER, e)) {
+            onLadder = true;
+        }
+    });
+
+    // -------------------------
+    // SAUT / GRAVITÉ
+    // -------------------------
+    if (onLadder) {
+        PLAYER.vy = 0;
+        if (INPUT.up) {
+            PLAYER.y -= 4;
+            PLAYER.climbing = true;
+        } else {
+            PLAYER.climbing = false;
+        }
+    } else {
+        if (INPUT.up && PLAYER.grounded) {
+            PLAYER.vy = PLAYER.jumpPower;
+            PLAYER.grounded = false;
+        }
+
+        PLAYER.vy += GAME.gravity;
+        if (PLAYER.vy > 20) PLAYER.vy = 20;
+        PLAYER.climbing = false;
+    }
+
+    // -------------------------
+    // APPLICATION DES VITESSES
+    // -------------------------
+    PLAYER.x += PLAYER.vx;
+    PLAYER.y += PLAYER.vy;
+
+    if (PLAYER.x < 0) PLAYER.x = 0;
+
+    // -------------------------
+    // RESET grounded AVANT collisions
+    // -------------------------
+    PLAYER.grounded = false;
+
+    // -------------------------
+    // COLLISION SOL (sécurité absolue)
+    // -------------------------
+    if (PLAYER.vy >= 0 && PLAYER.y + PLAYER.height >= GAME.groundY) {
+        PLAYER.y = GAME.groundY - PLAYER.height;
+        PLAYER.vy = 0;
+        PLAYER.grounded = true;
+    }
+
+    // -------------------------
+    // COLLISIONS PLATEFORMES
+    // -------------------------
+    entities.forEach(entity => {
+        if (entity.type === 'platform') {
+            const prevBottom = PLAYER.y + PLAYER.height - PLAYER.vy;
+
+            if (
+                PLAYER.vy >= 0 &&
+                prevBottom <= entity.y &&
+                PLAYER.y + PLAYER.height >= entity.y &&
+                PLAYER.x + PLAYER.width > entity.x &&
+                PLAYER.x < entity.x + entity.w
+            ) {
+                PLAYER.y = entity.y - PLAYER.height;
+                PLAYER.vy = 0;
+                PLAYER.grounded = true;
+            }
+        }
+
+        else if (entity.type === 'coin' && !entity.collected && checkCollision(PLAYER, entity)) {
+            entity.collected = true;
+            triggerQuestion();
+        }
+
+        else if (entity.type === 'npc' && !entity.talked && checkCollision(PLAYER, entity)) {
+            if (entity.isBoss) triggerBossChallenge(entity);
+            else triggerQuestion(true, entity);
+        }
+
+        else if (entity.type === 'castle' && PLAYER.x > entity.x + 50) {
+            levelComplete();
+        }
+    });
+
+    // -------------------------
+    // CAMÉRA
+    // -------------------------
+    GAME.cameraX = PLAYER.x - canvas.width / 3;
+    if (GAME.cameraX < 0) GAME.cameraX = 0;
+}
+
+    function checkCollision(r1, r2) {
+        return (r1.x < r2.x + r2.w && r1.x + r1.width > r2.x && r1.y < r2.y + r2.h && r1.y + r1.height > r2.y);
+    }
+
+    function draw() {
+        ctx.fillStyle = '#87CEEB'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        entities.forEach(e => e.draw());
+        drawPrincess(PLAYER.x - GAME.cameraX, PLAYER.y, PLAYER.width, PLAYER.height, PLAYER.facingRight);
+    }
+
+    function drawPrincess(x, y, w, h, facingRight) {
+        ctx.save();
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath(); ctx.arc(x + w/2, y + 10, 18, Math.PI, 0); 
+        ctx.fillRect(x + w/2 - 18, y + 10, 36, 50); ctx.fill();
+        ctx.fillStyle = '#FF69B4';
+        ctx.beginPath(); ctx.moveTo(x + w/2, y + 10); ctx.lineTo(x + w + 5, y + h); ctx.lineTo(x - 5, y + h); ctx.fill();
+        ctx.fillStyle = '#FFE0BD';
+        ctx.beginPath(); ctx.arc(x + w/2, y + 15, 15, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = 'black';
+        ctx.fillRect(x + w/2 - 6, y + 12, 3, 3); ctx.fillRect(x + w/2 + 3, y + 12, 3, 3);
+        ctx.fillStyle = 'gold';
+        ctx.beginPath(); ctx.moveTo(x + w/2 - 10, y - 2); ctx.lineTo(x + w/2, y + 5); ctx.lineTo(x + w/2 + 10, y - 2); ctx.lineTo(x + w/2 + 10, y + 8); ctx.lineTo(x + w/2 - 10, y + 8); ctx.fill();
+        ctx.restore();
+    }
+
+    function triggerBossChallenge(boss) {
+        GAME.state = 'QUESTION'; boss.talked = true;
+        const modal = document.getElementById('modal-overlay');
+        modal.style.display = 'flex';
+        const wordObj = wordsData[Math.floor(Math.random() * wordsData.length)];
+        document.getElementById('q-title').innerText = "BOSS FANTÔME !";
+        document.getElementById('q-content').innerText = "Écris le mot mystère entier :";
+        document.getElementById('q-clue').innerText = wordObj.clue;
+        
+        const area = document.getElementById('q-input-area'); area.innerHTML = '';
+        const input = document.createElement('input'); input.type = 'text'; area.appendChild(input); input.focus();
+        const btn = document.createElement('button'); btn.innerText = "BATTRE LE BOSS !"; area.appendChild(btn);
+        
+        const check = () => {
+            if (input.value.toUpperCase().trim() === wordObj.word) { 
+                modal.style.display = 'none'; GAME.state = 'PLAYING'; showFeedback("VICTOIRE !"); GAME.score += 50; updateHUD();
+            } else { modal.style.display = 'none'; GAME.state = 'PLAYING'; takeDamage(); }
+        };
+        btn.onclick = check;
+        input.onkeydown = e => { if(e.key === 'Enter') check(); };
+    }
+
+    function triggerQuestion(isHard = false, npc = null) {
+        GAME.state = 'QUESTION'; if(npc) npc.talked = true;
+        const modal = document.getElementById('modal-overlay'); modal.style.display = 'flex';
+        const area = document.getElementById('q-input-area'); area.innerHTML = '';
+        document.getElementById('q-title').innerText = "Défi Magique !";
+        document.getElementById('q-clue').innerText = "";
+
+        const rand = Math.random();
+        
+        if (rand < 0.333) {
+            // DEFI CALCUL (jusqu'à 40)
+            const maxVal = Math.min(40, 10 + GAME.level * 2);
+            let result = Math.floor(Math.random() * (maxVal - 5)) + 5;
+            let a = Math.floor(Math.random() * (result - 1)) + 1;
+            let b = result - a;
+            
+            document.getElementById('q-content').innerText = `${a} + ${b} = ?`;
+            const input = document.createElement('input'); input.type = 'text'; area.appendChild(input); input.focus();
+            const btn = document.createElement('button'); btn.innerText = "Vérifier"; area.appendChild(btn);
+            const check = () => {
+                if (parseInt(input.value) === result) { success(); } else { fail(); }
+            };
+            btn.onclick = check;
+            input.onkeydown = e => { if(e.key === 'Enter') check(); };
+        } 
+        else if (rand < 0.666) {
+            if (Math.random() < 0.5) {
+                // Word completion
+                const wordObj = wordsData[Math.floor(Math.random() * wordsData.length)];
+                // Generate masked word with 1-2 missing letters
+                let wordArray = wordObj.word.split('');
+                const numMissing = Math.floor(Math.random() * 2) + 1; // 1 or 2 missing
+                for (let i = 0; i < numMissing; i++) {
+                    const pos = Math.floor(Math.random() * wordArray.length);
+                    if (wordArray[pos] !== '_') {
+                        wordArray[pos] = '_';
+                    }
+                }
+                const maskedWord = wordArray.join(' ');
+                document.getElementById('q-content').innerText = `Complète le mot : ${maskedWord}`;
+                document.getElementById('q-clue').innerText = wordObj.clue;
+                const input = document.createElement('input'); input.type = 'text'; area.appendChild(input); input.focus();
+                const btn = document.createElement('button'); btn.innerText = "Valider"; area.appendChild(btn);
+                const check = () => {
+                    if (input.value.toUpperCase().trim() === wordObj.word) { success(); } else { fail(); }
+                };
+                btn.onclick = check;
+                input.onkeydown = e => { if(e.key === 'Enter') check(); };
+            } else {
+                // Number challenge
+                const numObj = numbersData[Math.floor(Math.random() * numbersData.length)];
+                let expectedAnswer;
+                let promptText;
+                if (Math.random() < 0.5) {
+                    // Digit to word
+                    promptText = `Écris en lettres : ${numObj.digit}`;
+                    expectedAnswer = numObj.word;
+                } else {
+                    // Word to digit
+                    promptText = `Écris en chiffres : ${numObj.word}`;
+                    expectedAnswer = numObj.digit;
+                }
+                document.getElementById('q-content').innerText = promptText;
+                document.getElementById('q-clue').innerText = numObj.clue;
+                const input = document.createElement('input'); input.type = 'text'; area.appendChild(input); input.focus();
+                const btn = document.createElement('button'); btn.innerText = "Valider"; area.appendChild(btn);
+                const check = () => {
+                    let userInput = input.value.toUpperCase().trim();
+                    if (userInput === expectedAnswer) { success(); } else { fail(); }
+                };
+                btn.onclick = check;
+                input.onkeydown = e => { if(e.key === 'Enter') check(); };
+            }
+        }
+        else {
+            // DEFI LECTURE
+            const sentence = sentencesData[Math.floor(Math.random() * sentencesData.length)];
+            document.getElementById('q-content').innerText = sentence;
+            document.getElementById('q-content').style.fontSize = '32px'; // Plus grand pour la lecture
+            document.getElementById('q-clue').innerText = "Lis cette phrase à voix haute, puis demande à un adulte de valider !";
+            
+            const btnSuccess = document.createElement('button'); btnSuccess.innerText = "Bien lu !"; area.appendChild(btnSuccess);
+            const btnFail = document.createElement('button'); btnFail.innerText = "À recommencer"; area.appendChild(btnFail);
+            btnFail.style.background = 'linear-gradient(to bottom, #FF0000, #C71585)'; // Rouge pour échec
+            
+            btnSuccess.onclick = () => { success(); };
+            btnFail.onclick = () => { fail(); };
+        }
+
+        const success = () => {
+            modal.style.display = 'none'; GAME.state = 'PLAYING'; showFeedback("BIEN JOUÉ !"); GAME.score += 15; updateHUD();
+        };
+        const fail = () => {
+            modal.style.display = 'none'; GAME.state = 'PLAYING'; takeDamage();
+        };
+    }
+
+    function takeDamage() { GAME.mistakes++; updateHUD(); showFeedback("OUPS ! ❤️-1"); if (GAME.mistakes >= GAME.maxMistakes) gameOver(); }
+    function levelComplete() { GAME.state = 'MENU'; showFeedback("BRAVO !"); setTimeout(() => { GAME.level++; generateLevel(); GAME.state = 'PLAYING'; }, 1500); }
+    function gameOver() {
+    GAME.state = 'MENU';
+
+    const modal = document.getElementById('modal-overlay');
+    const title = document.getElementById('q-title');
+    const content = document.getElementById('q-content');
+    const clue = document.getElementById('q-clue');
+    const area = document.getElementById('q-input-area');
+
+    title.innerText = "✨ Fin de l'aventure ✨";
+    content.innerText = "Oh non… Olivia a perdu toutes ses vies 💔";
+    clue.innerText = "Mais ce n’est pas grave ! Chaque essai rend plus fort 💪";
+
+    area.innerHTML = "";
+
+    const retryBtn = document.createElement('button');
+    retryBtn.innerText = "🔁 Rejouer";
+    retryBtn.style.fontSize = "24px";
+    retryBtn.style.padding = "15px 30px";
+
+    retryBtn.onclick = () => {
+        modal.style.display = 'none';
+        GAME.mistakes = 0;
+        GAME.level = 1;
+        GAME.score = 0;
+        generateLevel();
+        updateHUD();
+        GAME.state = 'PLAYING';
+    };
+
+    area.appendChild(retryBtn);
+    modal.style.display = 'flex';
+}
+    function updateHUD() { document.getElementById('score').innerText = GAME.score; document.getElementById('level').innerText = GAME.level; document.getElementById('lives').innerText = 3 - GAME.mistakes; }
+    function showFeedback(text) { const m = document.getElementById('feedback-msg'); m.innerText = text; m.style.opacity = 1; setTimeout(() => m.style.opacity = 0, 1000); }
+
+    document.getElementById('start-button').onclick = () => {
+        isMusicEnabled = document.getElementById('music-toggle').checked;
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('hud').style.display = 'flex';
+        GAME.state = 'PLAYING';
+        initAudio();
+        generateLevel();
+    };
+
+    window.addEventListener('keydown', e => { 
+        if (e.code === 'ArrowLeft') INPUT.left = true; 
+        if (e.code === 'ArrowRight') INPUT.right = true; 
+        if (e.code === 'ArrowUp' || e.code === 'Space') INPUT.up = true; 
+    });
+    window.addEventListener('keyup', e => { 
+        if (e.code === 'ArrowLeft') INPUT.left = false; 
+        if (e.code === 'ArrowRight') INPUT.right = false; 
+        if (e.code === 'ArrowUp' || e.code === 'Space') INPUT.up = false; 
+    });
+
+    const setupTouch = (id, key) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    
+    // Événements tactiles
+    el.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        INPUT[key] = true;
+    });
+    el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        INPUT[key] = false;
+    });
+    
+    // Support souris (pour tester sur PC)
+    el.addEventListener('mousedown', () => { INPUT[key] = true; });
+    el.addEventListener('mouseup', () => { INPUT[key] = false; });
+};
+
+// À mettre à la fin du script
+if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    const controls = document.getElementById('mobile-controls');
+    if (controls) {
+        controls.style.display = 'flex'; // Force l'affichage
+        setupTouch('btn-left', 'left');
+        setupTouch('btn-right', 'right');
+        setupTouch('btn-jump', 'up');
+    }
+}
+
+    function loop() { update(); draw(); requestAnimationFrame(loop); }
+    loop();
+
+    
+</script>
+</body>
+</html>
