@@ -167,11 +167,12 @@ button {
     bottom: 0px;
     left: 0;
     width: 100%;
-    padding: 10px 20px;
+    padding: 15px 20px;
     box-sizing: border-box;
     justify-content: space-between;
     z-index: 50;
     pointer-events: none;
+    background: rgba(124, 179, 66, 0.3);
 }
 
 .touch-btn {
@@ -561,7 +562,9 @@ button {
         
         GAME.mistakes = 0;
 
-        entities.push(new Platform(0, GAME.groundY, 20000, 100, true));
+        // Extension visuelle du sol jusqu'au bas de l'écran
+const groundHeight = canvas.height - GAME.groundY;  // Calcule ~150px ou la valeur actuelle
+entities.push(new Platform(0, GAME.groundY, 20000, groundHeight, true));;
 
         let currentX = 400;
         let currentY = GAME.groundY - 120; 
